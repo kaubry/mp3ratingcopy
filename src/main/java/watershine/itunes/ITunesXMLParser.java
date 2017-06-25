@@ -22,8 +22,6 @@ import java.util.ArrayList;
 @Component
 public class ITunesXMLParser implements LibraryParserInterface {
 
-    private final static String ITUNES_LIBRARY_FILE = "C:\\Users\\kevin\\Music\\iTunes\\iTunes Music Library.xml";
-
     private final static String TO_REMOVE_FROM_PATH = "file://localhost/";
 
 
@@ -31,12 +29,12 @@ public class ITunesXMLParser implements LibraryParserInterface {
 
         FileInputStream is = null;
         try {
-            is = new FileInputStream(ITUNES_LIBRARY_FILE);
+            is = new FileInputStream(filePath);
             JAXBContext context = JAXBContext.newInstance(SongLibrary.class);
             Unmarshaller unmarshaller = context.createUnmarshaller();
             XMLInputFactory xif = XMLInputFactory.newFactory();
             xif.setProperty(XMLInputFactory.SUPPORT_DTD, false);
-            XMLStreamReader xsr = xif.createXMLStreamReader(new StreamSource(ITUNES_LIBRARY_FILE));
+            XMLStreamReader xsr = xif.createXMLStreamReader(new StreamSource(filePath));
             return unmarshaller.unmarshal(xsr, SongLibrary.class).getValue();
         } finally {
             if (is != null) {
@@ -46,15 +44,15 @@ public class ITunesXMLParser implements LibraryParserInterface {
     }
 
     @Override
-    public ArrayList<Song> getSongs() {
+    public ArrayList<Song> getSongs(String xmlFilePath) throws JAXBException, IOException, XMLStreamException {
         ArrayList<Song> songs = new ArrayList<>();
         SongLibrary songLibrary = null;
         try {
-            songLibrary = parseFile(ITUNES_LIBRARY_FILE);
+            songLibrary = parseFile(xmlFilePath);
         } catch (IOException | JAXBException | XMLStreamException e) {
-            e.printStackTrace();
+            throw e;
         }
-        if (songLibrary != null) {
+        if (songLibrary != null && songLibrary.getDict() != null) {
             ITunesSongLibrary iTunesSongLibrary = new ITunesSongLibrary(songLibrary);
             Dict tracks = (Dict) iTunesSongLibrary.getValue("Tracks");
             for (Object d : tracks.getValues()) {
