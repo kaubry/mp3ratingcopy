@@ -5,10 +5,13 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.context.ConfigurableApplicationContext;
+import watershine.gui.MainFrame;
 import watershine.itunes.ITunesXMLParser;
-import watershine.model.Song;
 
-import java.util.ArrayList;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 
 @SpringBootApplication
@@ -20,14 +23,29 @@ public class Application implements CommandLineRunner {
     @Autowired
     private RatingCopyProcessor ratingCopyProcessor;
 
+    @Autowired
+    private MainFrame mainFrame;
+
     public static void main(String[] args) {
-        SpringApplication.run(Application.class, args);
+        ConfigurableApplicationContext context = new SpringApplicationBuilder(Application.class).headless(false).run(args);
+
+//        SpringApplication.run(Application.class, args);
     }
 
     @Override
     public void run(String... strings) throws Exception {
-        ArrayList<Song> songs = iTunesXMLParser.getSongs();
-        ratingCopyProcessor.copyRatingsIntoComposer(songs);
+        showMainWindow();
+//        ArrayList<Song> songs = iTunesXMLParser.getSongs();
+//        ratingCopyProcessor.copyRatingsIntoComposer(songs);
+    }
+
+    private void showMainWindow() {
+        mainFrame.addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent windowEvent){
+                System.exit(0);
+            }
+        });
+        mainFrame.setVisible(true);
     }
 
 
