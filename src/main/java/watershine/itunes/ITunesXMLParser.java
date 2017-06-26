@@ -4,7 +4,6 @@ import org.springframework.stereotype.Component;
 import watershine.LibraryParserInterface;
 import watershine.itunes.jax2b.Dict;
 import watershine.itunes.jax2b.SongLibrary;
-import watershine.itunes.model.ITunesSongLibrary;
 import watershine.model.Song;
 
 
@@ -53,8 +52,7 @@ public class ITunesXMLParser implements LibraryParserInterface {
             throw e;
         }
         if (songLibrary != null && songLibrary.getDict() != null) {
-            ITunesSongLibrary iTunesSongLibrary = new ITunesSongLibrary(songLibrary);
-            Dict tracks = (Dict) iTunesSongLibrary.getValue("Tracks");
+            Dict tracks = (Dict) getValueInDict(songLibrary.getDict(), "Tracks");
             for (Object d : tracks.getValues()) {
                 if (d instanceof Dict) {
                     Dict dict = (Dict) d;
