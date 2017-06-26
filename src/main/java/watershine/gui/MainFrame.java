@@ -1,5 +1,6 @@
 package watershine.gui;
 
+import org.apache.commons.lang3.SystemUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Component;
@@ -17,6 +18,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.xml.bind.JAXBException;
 import javax.xml.stream.XMLStreamException;
 import java.awt.*;
+import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
@@ -27,7 +29,7 @@ public class MainFrame extends JFrame implements ProcessFileProgressListener {
     private JFileChooser fc;
     private JProgressBar progressBar;
     private Mp3Tag selectedTag;
-    private String selectedFile;
+    private File selectedFile;
 
     @Autowired
     private ITunesXMLParser iTunesXMLParser;
@@ -40,6 +42,7 @@ public class MainFrame extends JFrame implements ProcessFileProgressListener {
 
     public MainFrame() throws HeadlessException {
         super();
+        this.selectedFile = getDefaultItunesXMLFile();
         initFileChooser();
         setSize(600, 200);
 
@@ -59,6 +62,10 @@ public class MainFrame extends JFrame implements ProcessFileProgressListener {
 
     private JPanel getChooseFilePanel() {
         JLabel label = new JLabel();
+        if(this.selectedFile != null) {
+            changeSelectedFileLabelText(label);
+        }
+
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEADING));
         JButton chooseITunesXml = new JButton("Locate iTunes XML file");
         chooseITunesXml.addActionListener(e -> chooseITunesFile(label));
@@ -116,11 +123,15 @@ public class MainFrame extends JFrame implements ProcessFileProgressListener {
     private void chooseITunesFile(JLabel label) {
         int returnVal = fc.showOpenDialog(this);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
-            this.selectedFile = fc.getSelectedFile().getPath();
-            label.setText(this.selectedFile);
+            this.selectedFile = fc.getSelectedFile();
+            changeSelectedFileLabelText(label);
         } else {
 
         }
+    }
+
+    private void changeSelectedFileLabelText(JLabel label) {
+        label.setText(this.selectedFile.getPath());
     }
 
     private void tagChanged(String selectedTag) {
@@ -128,8 +139,10 @@ public class MainFrame extends JFrame implements ProcessFileProgressListener {
     }
 
     private void startCopyRating() {
+        if(selectedFile == null)
+            return;
         try {
-            ArrayList<Song> songs = iTunesXMLParser.getSongs(this.selectedFile);
+            ArrayList<Song> songs = iTunesXMLParser.getSongs(this.selectedFile.getPath());
             taskExecutor.execute(new RatingCopyTask(ratingCopyProcessor, songs, this.selectedTag));
 //            ratingCopyProcessor.copyRatingsIntoMp3Tag(songs, this.selectedTag);
         } catch (JAXBException | IOException | XMLStreamException e) {
@@ -145,5 +158,16 @@ public class MainFrame extends JFrame implements ProcessFileProgressListener {
         } else {
             this.progressBar.setValue(nbrOfFileProcessed);
         }
+    }
+
+    private File getDefaultItunesXMLFile() {
+        String homePath = System.getProperty("user.home");
+        if(SystemUtils.IS_OS_WINDOWS) {
+            File iTunesXml = new File(String.join(File.separator, homePath, "Music", "iTunes", "iTunes Music Library.xml"));
+             if(iTunesXml.exists()) {
+                 return iTunesXml;
+             }
+        }
+        return null;
     }
 }
