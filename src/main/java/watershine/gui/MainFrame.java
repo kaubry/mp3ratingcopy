@@ -10,6 +10,7 @@ import watershine.RatingCopyProcessor;
 import watershine.RatingCopyTask;
 import watershine.itunes.ITunesXMLParser;
 import watershine.model.Library;
+import watershine.model.Playlist;
 import watershine.model.Song;
 
 import javax.annotation.PostConstruct;
@@ -23,6 +24,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Component
@@ -32,6 +34,9 @@ public class MainFrame extends JFrame implements ProcessFileProgressListener {
     private JProgressBar progressBar;
     private Mp3Tag selectedTag;
     private File selectedFile;
+    private PlayListComboBox playlistJComboBox;
+    private Playlist selectedPlaylist = null;
+    private Library library;
 
     @Autowired
     private ITunesXMLParser iTunesXMLParser;
@@ -44,17 +49,22 @@ public class MainFrame extends JFrame implements ProcessFileProgressListener {
 
     public MainFrame() throws HeadlessException {
         super();
-        this.selectedFile = getDefaultItunesXMLFile();
-        initFileChooser();
-        setSize(600, 200);
 
-        this.setContentPane(getContentPanel());
+        setSize(600, 250);
+
 
     }
 
     @PostConstruct
     private void init() {
+        this.selectedFile = getDefaultItunesXMLFile();
+
+        initFileChooser();
         ratingCopyProcessor.addProgressListener(this);
+        this.setContentPane(getContentPanel());
+        if(selectedFile != null)
+            updateLibrary();
+
     }
 
     @PreDestroy
@@ -62,9 +72,18 @@ public class MainFrame extends JFrame implements ProcessFileProgressListener {
         ratingCopyProcessor.removeProgressListener(this);
     }
 
+    private void updateLibrary() {
+        try {
+            library = iTunesXMLParser.getLibrary(this.selectedFile.getPath());
+            playlistJComboBox.updatePlaylist(library.getPlaylists());
+        } catch (JAXBException | IOException | XMLStreamException e) {
+            e.printStackTrace();
+        }
+    }
+
     private JPanel getChooseFilePanel() {
         JLabel label = new JLabel();
-        if(this.selectedFile != null) {
+        if (this.selectedFile != null) {
             changeSelectedFileLabelText(label);
         }
 
@@ -102,6 +121,19 @@ public class MainFrame extends JFrame implements ProcessFileProgressListener {
         return panel;
     }
 
+    private JPanel getPlaylistPannel() {
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEADING));
+        playlistJComboBox = new PlayListComboBox();
+        playlistJComboBox.addActionListener(e -> selectPlaylist());
+        panel.add(new JLabel("Playlist"));
+        panel.add(playlistJComboBox);
+        return panel;
+    }
+
+    private void selectPlaylist() {
+        selectedPlaylist = (Playlist) this.playlistJComboBox.getSelectedItem();
+    }
+
     private void initFileChooser() {
         fc = new JFileChooser();
         FileNameExtensionFilter xmlfilter = new FileNameExtensionFilter(
@@ -115,6 +147,7 @@ public class MainFrame extends JFrame implements ProcessFileProgressListener {
         contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
 
         contentPanel.add(getChooseFilePanel());
+        contentPanel.add(getPlaylistPannel());
         contentPanel.add(getChooseTagPanel());
         contentPanel.add(getActionPanel());
 
@@ -126,6 +159,7 @@ public class MainFrame extends JFrame implements ProcessFileProgressListener {
         int returnVal = fc.showOpenDialog(this);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             this.selectedFile = fc.getSelectedFile();
+            updateLibrary();
             changeSelectedFileLabelText(label);
         } else {
 
@@ -134,6 +168,7 @@ public class MainFrame extends JFrame implements ProcessFileProgressListener {
 
     private void changeSelectedFileLabelText(JLabel label) {
         label.setText(this.selectedFile.getPath());
+
     }
 
     private void tagChanged(String selectedTag) {
@@ -141,16 +176,11 @@ public class MainFrame extends JFrame implements ProcessFileProgressListener {
     }
 
     private void startCopyRating() {
-        if(selectedFile == null)
+        if (selectedFile == null)
             return;
-        try {
-            Library library = iTunesXMLParser.getLibrary(this.selectedFile.getPath());
-            List<Song> songs = library.getSongs();
-            taskExecutor.execute(new RatingCopyTask(ratingCopyProcessor, songs, this.selectedTag));
+        List<Song> songs = getSongsFromPlaylist(library.getSongs(), this.selectedPlaylist);
+        taskExecutor.execute(new RatingCopyTask(ratingCopyProcessor, songs, this.selectedTag));
 //            ratingCopyProcessor.copyRatingsIntoMp3Tag(songs, this.selectedTag);
-        } catch (JAXBException | IOException | XMLStreamException e) {
-            e.printStackTrace();
-        }
     }
 
     @Override
@@ -165,12 +195,18 @@ public class MainFrame extends JFrame implements ProcessFileProgressListener {
 
     private File getDefaultItunesXMLFile() {
         String homePath = System.getProperty("user.home");
-        if(SystemUtils.IS_OS_WINDOWS) {
+        if (SystemUtils.IS_OS_WINDOWS) {
             File iTunesXml = new File(String.join(File.separator, homePath, "Music", "iTunes", "iTunes Music Library.xml"));
-             if(iTunesXml.exists()) {
-                 return iTunesXml;
-             }
+            if (iTunesXml.exists()) {
+                return iTunesXml;
+            }
         }
         return null;
+    }
+
+    private List<Song> getSongsFromPlaylist(List<Song> allSongs, Playlist playlist) {
+        if (playlist == null)
+            return allSongs;
+        return allSongs.stream().filter(s -> playlist.getTracks().contains(s.getId())).collect(Collectors.toList());
     }
 }

@@ -144,8 +144,10 @@ public class ITunesXMLParser implements LibraryParserInterface {
         Map<String, Playlist> playlistMap = playlists.stream().collect(Collectors.toMap(Playlist::getPersistentId, Function.identity()));
         for (Iterator<Map.Entry<String, Playlist>> it = playlistMap.entrySet().iterator(); it.hasNext(); ) {
             Map.Entry<String, Playlist> item = it.next();
-            if (item.getValue().getParentPersistentId() != null)
+            if (item.getValue().getParentPersistentId() != null) {
+                item.getValue().setParent(playlistMap.get(item.getValue().getParentPersistentId()));
                 playlistMap.get(item.getValue().getParentPersistentId()).addChild(item.getValue());
+            }
         }
         return playlistMap.values().stream().filter(v -> v.getParentPersistentId() == null).collect(Collectors.toList());
     }
