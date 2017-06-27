@@ -9,6 +9,7 @@ import watershine.ProcessFileProgressListener;
 import watershine.RatingCopyProcessor;
 import watershine.RatingCopyTask;
 import watershine.itunes.ITunesXMLParser;
+import watershine.model.Library;
 import watershine.model.Song;
 
 import javax.annotation.PostConstruct;
@@ -21,6 +22,7 @@ import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.List;
 
 
 @Component
@@ -142,7 +144,8 @@ public class MainFrame extends JFrame implements ProcessFileProgressListener {
         if(selectedFile == null)
             return;
         try {
-            ArrayList<Song> songs = iTunesXMLParser.getSongs(this.selectedFile.getPath());
+            Library library = iTunesXMLParser.getLibrary(this.selectedFile.getPath());
+            List<Song> songs = library.getSongs();
             taskExecutor.execute(new RatingCopyTask(ratingCopyProcessor, songs, this.selectedTag));
 //            ratingCopyProcessor.copyRatingsIntoMp3Tag(songs, this.selectedTag);
         } catch (JAXBException | IOException | XMLStreamException e) {

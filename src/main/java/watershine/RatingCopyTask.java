@@ -4,14 +4,15 @@ package watershine;
 import watershine.model.Song;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class RatingCopyTask implements Runnable {
 
     RatingCopyProcessor ratingCopyProcessor;
-    ArrayList<Song> songs;
+    List<Song> songs;
     Mp3Tag tag;
 
-    public RatingCopyTask(RatingCopyProcessor ratingCopyProcessor, ArrayList<Song> songs, Mp3Tag tag) {
+    public RatingCopyTask(RatingCopyProcessor ratingCopyProcessor, List<Song> songs, Mp3Tag tag) {
         this.ratingCopyProcessor = ratingCopyProcessor;
         this.songs = songs;
         this.tag = tag;

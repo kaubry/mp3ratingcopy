@@ -35,7 +35,7 @@ public class Application implements CommandLineRunner {
     @Override
     public void run(String... strings) throws Exception {
         showMainWindow();
-//        ArrayList<Song> songs = iTunesXMLParser.getSongs();
+//        ArrayList<Song> songs = iTunesXMLParser.getLibrary();
 //        ratingCopyProcessor.copyRatingsIntoComposer(songs);
     }
 

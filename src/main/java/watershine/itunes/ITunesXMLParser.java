@@ -3,7 +3,10 @@ package watershine.itunes;
 import org.springframework.stereotype.Component;
 import watershine.LibraryParserInterface;
 import watershine.itunes.jax2b.Dict;
+import watershine.itunes.jax2b.DictArray;
 import watershine.itunes.jax2b.SongLibrary;
+import watershine.model.Library;
+import watershine.model.Playlist;
 import watershine.model.Song;
 
 
@@ -17,6 +20,7 @@ import javax.xml.transform.stream.StreamSource;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 @Component
 public class ITunesXMLParser implements LibraryParserInterface {
@@ -43,22 +47,33 @@ public class ITunesXMLParser implements LibraryParserInterface {
     }
 
     @Override
-    public ArrayList<Song> getSongs(String xmlFilePath) throws JAXBException, IOException, XMLStreamException {
-        ArrayList<Song> songs = new ArrayList<>();
-        SongLibrary songLibrary = null;
+    public Library getLibrary(String xmlFilePath) throws JAXBException, IOException, XMLStreamException {
+        Library library = new Library();
+
         try {
-            songLibrary = parseFile(xmlFilePath);
+            SongLibrary songLibrary = parseFile(xmlFilePath);
+            library.setSongs(getSongs(songLibrary));
+            library.setPlaylists(getPlaylists(songLibrary));
+
         } catch (IOException | JAXBException | XMLStreamException e) {
             throw e;
         }
+
+
+        return library;
+    }
+
+    private List<Song> getSongs(SongLibrary songLibrary) {
+        ArrayList<Song> songs = new ArrayList<>();
         if (songLibrary != null && songLibrary.getDict() != null) {
             Dict tracks = (Dict) getValueInDict(songLibrary.getDict(), "Tracks");
             for (Object d : tracks.getValues()) {
                 if (d instanceof Dict) {
                     Dict dict = (Dict) d;
-                    String location = (String) getValueInDict(dict, "Location");
                     Song song = new Song();
-//                    song.setSongFileURI(location.substring(TO_REMOVE_FROM_PATH.length(), location.length()));
+                    int id = (int) getValueInDict(dict, "Track ID");
+                    song.setId(id);
+                    String location = (String) getValueInDict(dict, "Location");
                     song.setSongFileURI(location);
                     try {
                         int rating = (Integer) getValueInDict(dict, "Rating");
@@ -68,10 +83,40 @@ public class ITunesXMLParser implements LibraryParserInterface {
                     songs.add(song);
                 }
             }
-
         }
-
         return songs;
+    }
+
+    private List<Playlist> getPlaylists(SongLibrary songLibrary) {
+        ArrayList<Playlist> playlists = new ArrayList<>();
+        if (songLibrary != null && songLibrary.getDict() != null) {
+            DictArray lists = (DictArray) getValueInDict(songLibrary.getDict(), "Playlists");
+            for (Dict dict : lists.getDicts()) {
+                if (Boolean.FALSE.equals(getValueInDict(dict, "Visible"))) {
+                    continue;
+                }
+                if (Boolean.TRUE.equals(getValueInDict(dict, "Folder"))) {
+                    continue;
+                }
+                DictArray playlistItem = (DictArray) getValueInDict(dict, "Playlist Items");
+
+                Playlist p = new Playlist();
+                p.setName((String) getValueInDict(dict, "Name"));
+                p.setTracks(getTracksInPlaylist(playlistItem));
+                playlists.add(p);
+            }
+        }
+        return playlists;
+    }
+
+    private List<Integer> getTracksInPlaylist(DictArray playlistItem) {
+        if(playlistItem == null)
+            return null;
+        List<Integer> tracks = new ArrayList<>();
+        for (Dict dict : playlistItem.getDicts()) {
+            tracks.add((Integer) getValueInDict(dict, "Track ID"));
+        }
+        return tracks;
     }
 
     private Object getValueInDict(Dict dict, String key) {

@@ -1,5 +1,6 @@
 package watershine;
 
+import watershine.model.Library;
 import watershine.model.Song;
 
 import javax.xml.bind.JAXBException;
@@ -10,5 +11,5 @@ import java.util.ArrayList;
 
 public interface LibraryParserInterface {
 
-    public ArrayList<Song> getSongs(String xmlFilePath) throws JAXBException, IOException, XMLStreamException;
+    public Library getLibrary(String xmlFilePath) throws JAXBException, IOException, XMLStreamException;
 }

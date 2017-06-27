@@ -25,6 +25,8 @@ public class Dict {
                     type=Dict.class),
             @XmlElement(name="array",
                     type=DictArray.class),
+            @XmlElement(name="data",
+                    type=String.class)
     })
 
     private ArrayList<Object> values = new ArrayList<>();

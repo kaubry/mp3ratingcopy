@@ -23,7 +23,7 @@ public class RatingCopyProcessor {
     private final static String STAR_UNICODE = "\u2B50";
     private List<ProcessFileProgressListener> progressListeners = new ArrayList<>();
 
-    public void copyRatingsIntoMp3Tag(ArrayList<Song> songs, Mp3Tag tag) {
+    public void copyRatingsIntoMp3Tag(List<Song> songs, Mp3Tag tag) {
         List<Song> toProcess = songs.stream().filter(e -> e.getStarRating() != 0).collect(Collectors.toList());
         int fileProcessed = 0;
         int fileToProcess = toProcess.size();

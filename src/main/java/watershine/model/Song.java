@@ -7,6 +7,7 @@ public class Song {
 
     private String songFileURI;
     private int starRating;
+    private int id;
 
     public String getSongFileURI() {
         return songFileURI;
@@ -22,5 +23,13 @@ public class Song {
 
     public void setStarRating(int starRating) {
         this.starRating = starRating;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 }
