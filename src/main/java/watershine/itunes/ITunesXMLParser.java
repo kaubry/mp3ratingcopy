@@ -92,17 +92,21 @@ public class ITunesXMLParser implements LibraryParserInterface {
         if (songLibrary != null && songLibrary.getDict() != null) {
             DictArray lists = (DictArray) getValueInDict(songLibrary.getDict(), "Playlists");
             for (Dict dict : lists.getDicts()) {
+                Playlist p = new Playlist();
                 if (Boolean.FALSE.equals(getValueInDict(dict, "Visible"))) {
                     continue;
                 }
                 if (Boolean.TRUE.equals(getValueInDict(dict, "Folder"))) {
-                    continue;
+                    p.setFolder(true);
                 }
                 DictArray playlistItem = (DictArray) getValueInDict(dict, "Playlist Items");
 
-                Playlist p = new Playlist();
                 p.setName((String) getValueInDict(dict, "Name"));
-                p.setTracks(getTracksInPlaylist(playlistItem));
+                if (!p.isFolder()) {
+                    p.setTracks(getTracksInPlaylist(playlistItem));
+                }
+                p.setPersistentId((String) getValueInDict(dict, "Playlist Persistent ID"));
+                p.setParentPersistentId((String) getValueInDict(dict, "Parent Persistent ID"));
                 playlists.add(p);
             }
         }
@@ -110,7 +114,7 @@ public class ITunesXMLParser implements LibraryParserInterface {
     }
 
     private List<Integer> getTracksInPlaylist(DictArray playlistItem) {
-        if(playlistItem == null)
+        if (playlistItem == null)
             return null;
         List<Integer> tracks = new ArrayList<>();
         for (Dict dict : playlistItem.getDicts()) {

@@ -10,6 +10,10 @@ public class Playlist {
 
     private String name;
     private List<Integer> tracks = new ArrayList<>();
+    private String persistentId;
+    private String parentPersistentId;
+    private boolean folder = false;
+    private List<Playlist> children= new ArrayList<>();
 
     public String getName() {
         return name;
@@ -29,5 +33,37 @@ public class Playlist {
 
     public void addTrack(int trackId) {
         tracks.add(trackId);
+    }
+
+    public String getPersistentId() {
+        return persistentId;
+    }
+
+    public void setPersistentId(String persistentId) {
+        this.persistentId = persistentId;
+    }
+
+    public String getParentPersistentId() {
+        return parentPersistentId;
+    }
+
+    public void setParentPersistentId(String parentPersistentId) {
+        this.parentPersistentId = parentPersistentId;
+    }
+
+    public boolean isFolder() {
+        return folder;
+    }
+
+    public void setFolder(boolean folder) {
+        this.folder = folder;
+    }
+
+    public void addChild(Playlist playlist) {
+        this.children.add(playlist);
+    }
+
+    public void removeChild(Playlist playlist) {
+        this.children.remove(playlist);
     }
 }
