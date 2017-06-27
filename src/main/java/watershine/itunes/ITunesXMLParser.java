@@ -20,7 +20,11 @@ import javax.xml.transform.stream.StreamSource;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Component
 public class ITunesXMLParser implements LibraryParserInterface {
@@ -53,7 +57,7 @@ public class ITunesXMLParser implements LibraryParserInterface {
         try {
             SongLibrary songLibrary = parseFile(xmlFilePath);
             library.setSongs(getSongs(songLibrary));
-            library.setPlaylists(getPlaylists(songLibrary));
+            library.setPlaylists(getStructuredPlaylist(getPlaylists(songLibrary)));
 
         } catch (IOException | JAXBException | XMLStreamException e) {
             throw e;
@@ -135,4 +139,16 @@ public class ITunesXMLParser implements LibraryParserInterface {
         }
         return null;
     }
+
+    private List<Playlist> getStructuredPlaylist(List<Playlist> playlists) {
+        Map<String, Playlist> playlistMap = playlists.stream().collect(Collectors.toMap(Playlist::getPersistentId, Function.identity()));
+        for (Iterator<Map.Entry<String, Playlist>> it = playlistMap.entrySet().iterator(); it.hasNext(); ) {
+            Map.Entry<String, Playlist> item = it.next();
+            if (item.getValue().getParentPersistentId() != null)
+                playlistMap.get(item.getValue().getParentPersistentId()).addChild(item.getValue());
+        }
+        return playlistMap.values().stream().filter(v -> v.getParentPersistentId() == null).collect(Collectors.toList());
+    }
+
+
 }
