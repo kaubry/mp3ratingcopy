@@ -1,5 +1,10 @@
 package watershine.model;
 
+import watershine.Mp3Tag;
+
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Created by kevin on 23.06.2017.
  */
@@ -8,6 +13,11 @@ public class Song {
     private String songFileURI;
     private int starRating;
     private int id;
+    private Map<Mp3Tag, String> tags;
+
+    public Song() {
+        this.tags = new HashMap<>();
+    }
 
     public String getSongFileURI() {
         return songFileURI;
@@ -31,5 +41,13 @@ public class Song {
 
     public void setId(int id) {
         this.id = id;
+    }
+
+    public void setTag(Mp3Tag tag, String value) {
+        tags.put(tag, value);
+    }
+
+    public String getTag(Mp3Tag tag) {
+        return tags.get(tag);
     }
 }

@@ -2,6 +2,7 @@ package watershine.itunes;
 
 import org.springframework.stereotype.Component;
 import watershine.LibraryParserInterface;
+import watershine.Mp3Tag;
 import watershine.itunes.jax2b.Dict;
 import watershine.itunes.jax2b.DictArray;
 import watershine.itunes.jax2b.SongLibrary;
@@ -82,6 +83,15 @@ public class ITunesXMLParser implements LibraryParserInterface {
                     try {
                         int rating = (Integer) getValueInDict(dict, "Rating");
                         song.setStarRating(rating);
+                    } catch (NullPointerException e) {
+                    }
+                    try {
+                        song.setTag(Mp3Tag.COMMENT, (String) getValueInDict(dict, "Comments"));
+
+                    } catch (NullPointerException e) {
+                    }
+                    try {
+                        song.setTag(Mp3Tag.COMPOSER, (String) getValueInDict(dict, "Composer"));
                     } catch (NullPointerException e) {
                     }
                     songs.add(song);

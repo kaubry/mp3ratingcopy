@@ -37,6 +37,7 @@ public class MainFrame extends JFrame implements ProcessFileProgressListener {
     private PlayListComboBox playlistJComboBox;
     private Playlist selectedPlaylist = null;
     private Library library;
+    private JCheckBox override;
 
     @Autowired
     private ITunesXMLParser iTunesXMLParser;
@@ -49,10 +50,8 @@ public class MainFrame extends JFrame implements ProcessFileProgressListener {
 
     public MainFrame() throws HeadlessException {
         super();
-
+        setTitle("Mp3 Ratings Copy Tool");
         setSize(600, 250);
-
-
     }
 
     @PostConstruct
@@ -62,7 +61,7 @@ public class MainFrame extends JFrame implements ProcessFileProgressListener {
         initFileChooser();
         ratingCopyProcessor.addProgressListener(this);
         this.setContentPane(getContentPanel());
-        if(selectedFile != null)
+        if (selectedFile != null)
             updateLibrary();
 
     }
@@ -105,6 +104,9 @@ public class MainFrame extends JFrame implements ProcessFileProgressListener {
         JLabel label = new JLabel("Id2 tag to copy ratings to");
         panel.add(label);
         panel.add(tagsCombo);
+
+        override = new JCheckBox("Override");
+        panel.add(override);
 
         panel.setPreferredSize(new Dimension(0, 30));
         return panel;
@@ -168,7 +170,6 @@ public class MainFrame extends JFrame implements ProcessFileProgressListener {
 
     private void changeSelectedFileLabelText(JLabel label) {
         label.setText(this.selectedFile.getPath());
-
     }
 
     private void tagChanged(String selectedTag) {
@@ -179,8 +180,10 @@ public class MainFrame extends JFrame implements ProcessFileProgressListener {
         if (selectedFile == null)
             return;
         List<Song> songs = getSongsFromPlaylist(library.getSongs(), this.selectedPlaylist);
-        taskExecutor.execute(new RatingCopyTask(ratingCopyProcessor, songs, this.selectedTag));
-//            ratingCopyProcessor.copyRatingsIntoMp3Tag(songs, this.selectedTag);
+        int dialogResult = JOptionPane.showConfirmDialog(null, RatingCopyProcessor.getSongToProcess(songs, selectedTag, override.isSelected()).size() + " Songs will be processed", "Warning", JOptionPane.YES_NO_OPTION);
+        if (dialogResult == JOptionPane.YES_OPTION) {
+            taskExecutor.execute(new RatingCopyTask(ratingCopyProcessor, songs, this.selectedTag, override.isSelected()));
+        }
     }
 
     @Override
