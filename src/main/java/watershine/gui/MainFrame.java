@@ -198,7 +198,7 @@ public class MainFrame extends JFrame implements ProcessFileProgressListener {
 
     private File getDefaultItunesXMLFile() {
         String homePath = System.getProperty("user.home");
-        if (SystemUtils.IS_OS_WINDOWS) {
+        if (SystemUtils.IS_OS_WINDOWS || SystemUtils.IS_OS_MAC_OSX) {
             File iTunesXml = new File(String.join(File.separator, homePath, "Music", "iTunes", "iTunes Music Library.xml"));
             if (iTunesXml.exists()) {
                 return iTunesXml;
