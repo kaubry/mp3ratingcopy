@@ -14,36 +14,20 @@ import org.springframework.context.ConfigurableApplicationContext;
 @SpringBootApplication
 public class Main extends Application {
 
-//    @Autowired
-//    private ITunesXMLParser iTunesXMLParser;
-//
-//    @Autowired
-//    private RatingCopyProcessor ratingCopyProcessor;
-
-//    @Autowired
-//    private MainFrame mainFrame;
-
     private ConfigurableApplicationContext springContext;
     private Parent rootNode;
 
 
     public static void main(String[] args) {
         Application.launch(args);
-//        SpringApplication.run(Application.class, args);
     }
 
     @Override
     public void init() throws Exception {
-//        ConfigurableApplicationContext context = new SpringApplicationBuilder(Main.class).headless(false).run(args);
         springContext = SpringApplication.run(Main.class);
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/main.fxml"));
         fxmlLoader.setControllerFactory(springContext::getBean);
         rootNode = fxmlLoader.load();
-
-//        showMainWindow();
-
-//        ArrayList<Song> songs = iTunesXMLParser.getLibrary();
-//        ratingCopyProcessor.copyRatingsIntoComposer(songs);
     }
 
     @Override
@@ -59,29 +43,4 @@ public class Main extends Application {
         springContext.close();
     }
 
-//    private void showMainWindow() {
-//        mainFrame.addWindowListener(new WindowAdapter() {
-//            public void windowClosing(WindowEvent windowEvent){
-//                System.exit(0);
-//            }
-//        });
-//        mainFrame.setVisible(true);
-//        SwingUtilities.updateComponentTreeUI(mainFrame);
-//    }
-
-
-//    @Bean
-//    public CommandLineRunner commandLineRunner(ApplicationContext ctx) {
-//        return args -> {
-//
-//            System.out.println("Let's inspect the beans provided by Spring Boot:");
-//
-//            String[] beanNames = ctx.getBeanDefinitionNames();
-//            Arrays.sort(beanNames);
-//            for (String beanName : beanNames) {
-//                System.out.println(beanName);
-//            }
-//
-//        };
-//    }
 }

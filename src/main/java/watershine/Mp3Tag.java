@@ -4,8 +4,8 @@ package watershine;
  * Created by kevin on 26.06.2017.
  */
 public enum Mp3Tag {
-    COMPOSER("composer"),
-    COMMENT("comment");
+    COMPOSER("Composer"),
+    COMMENT("Comment");
 
 
     private String tagName;
@@ -20,9 +20,9 @@ public enum Mp3Tag {
 
     public static Mp3Tag getEnum(String value) {
         switch (value) {
-            case "composer":
+            case "Composer":
                 return COMPOSER;
-            case "comment":
+            case "Comment":
                 return COMMENT;
             default:
                 return null;
