@@ -1,5 +1,9 @@
 package watershine.gui;
 
+import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
+import javafx.scene.control.*;
+import javafx.stage.FileChooser;
 import org.apache.commons.lang3.SystemUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.task.TaskExecutor;
@@ -13,57 +17,66 @@ import watershine.model.Library;
 import watershine.model.Playlist;
 import watershine.model.Song;
 
-import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
-import javax.swing.*;
-import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.xml.bind.JAXBException;
 import javax.xml.stream.XMLStreamException;
-import java.awt.*;
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 
 @Component
-public class MainFrame extends JFrame implements ProcessFileProgressListener {
-
-    private JFileChooser fc;
-    private JProgressBar progressBar;
-    private Mp3Tag selectedTag;
-    private File selectedFile;
-    private PlayListComboBox playlistJComboBox;
-    private Playlist selectedPlaylist = null;
-    private Library library;
-    private JCheckBox override;
+class MainFrameController implements ProcessFileProgressListener {
 
     @Autowired
     private ITunesXMLParser iTunesXMLParser;
-
     @Autowired
     private RatingCopyProcessor ratingCopyProcessor;
-
     @Autowired
     private TaskExecutor taskExecutor;
 
-    public MainFrame() throws HeadlessException {
-        super();
-        setTitle("Mp3 Ratings Copy Tool");
-        setSize(600, 250);
-    }
+    @FXML
+    public Label itunesFileLabel;
+    @FXML
+    public ComboBox<String> tagsCombo;
+    @FXML
+    private PlayListComboBox playlistComboBox;
+    @FXML
+    private CheckBox override;
+    @FXML
+    private ProgressBar progressBar;
+    @FXML
+    public Button startButton;
 
-    @PostConstruct
-    private void init() {
+    private FileChooser fc;
+    private Library library;
+    private File selectedFile;
+
+    private boolean tagSelected;
+    private boolean playlistSelected;
+
+    @FXML
+    private void initialize() {
         this.selectedFile = getDefaultItunesXMLFile();
-
+        updateSelectedFileName();
         initFileChooser();
+        initTagsCombo();
         ratingCopyProcessor.addProgressListener(this);
-        this.setContentPane(getContentPanel());
         if (selectedFile != null)
             updateLibrary();
 
+    }
+
+    private void updateSelectedFileName() {
+        if (selectedFile != null) {
+            itunesFileLabel.setText(this.selectedFile.getPath());
+            enableStartButton();
+        } else {
+            itunesFileLabel.setText("");
+        }
     }
 
     @PreDestroy
@@ -74,125 +87,59 @@ public class MainFrame extends JFrame implements ProcessFileProgressListener {
     private void updateLibrary() {
         try {
             library = iTunesXMLParser.getLibrary(this.selectedFile.getPath());
-            playlistJComboBox.updatePlaylist(library.getPlaylists());
+            playlistComboBox.updatePlaylist(library.getPlaylists());
         } catch (JAXBException | IOException | XMLStreamException e) {
             e.printStackTrace();
         }
     }
 
-    private JPanel getChooseFilePanel() {
-        JLabel label = new JLabel();
-        if (this.selectedFile != null) {
-            changeSelectedFileLabelText(label);
-        }
-
-        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEADING));
-        JButton chooseITunesXml = new JButton("Locate iTunes XML file");
-        chooseITunesXml.addActionListener(e -> chooseITunesFile(label));
-
-        panel.add(chooseITunesXml);
-        panel.add(label);
-        return panel;
-    }
-
-    private JPanel getChooseTagPanel() {
-        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEADING));
+    private void initTagsCombo() {
         String[] tags = Arrays.stream(Mp3Tag.values()).map(s -> s.tagName()).toArray(String[]::new);
-        JComboBox<String> tagsCombo = new JComboBox<>(tags);
-        tagsCombo.addActionListener(e -> tagChanged((String) tagsCombo.getSelectedItem()));
-        tagsCombo.setSelectedIndex(0);
-        JLabel label = new JLabel("Id2 tag to copy ratings to");
-        panel.add(label);
-        panel.add(tagsCombo);
-
-        override = new JCheckBox("Override");
-        panel.add(override);
-
-        panel.setPreferredSize(new Dimension(0, 30));
-        return panel;
-    }
-
-    private JPanel getActionPanel() {
-        JButton startButton = new JButton("Start");
-        progressBar = new JProgressBar();
-        progressBar.setStringPainted(true);
-        startButton.addActionListener(e -> startCopyRating());
-        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEADING));
-        panel.add(startButton);
-        panel.add(progressBar);
-        return panel;
-    }
-
-    private JPanel getPlaylistPannel() {
-        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEADING));
-        playlistJComboBox = new PlayListComboBox();
-        playlistJComboBox.addActionListener(e -> selectPlaylist());
-        panel.add(new JLabel("Playlist"));
-        panel.add(playlistJComboBox);
-        return panel;
-    }
-
-    private void selectPlaylist() {
-        selectedPlaylist = (Playlist) this.playlistJComboBox.getSelectedItem();
+        tagsCombo.getItems().addAll(tags);
     }
 
     private void initFileChooser() {
-        fc = new JFileChooser();
-        FileNameExtensionFilter xmlfilter = new FileNameExtensionFilter(
-                "xml files (*.xml)", "xml");
-        fc.setFileFilter(xmlfilter);
-        fc.setAcceptAllFileFilterUsed(false);
+        fc = new FileChooser();
+        fc.setTitle("Select iTunes XML Library File");
+        fc.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("XML Files (*.xml)", "*.xml"));
     }
 
-    private JPanel getContentPanel() {
-        JPanel contentPanel = new JPanel();
-        contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
-
-        contentPanel.add(getChooseFilePanel());
-        contentPanel.add(getPlaylistPannel());
-        contentPanel.add(getChooseTagPanel());
-        contentPanel.add(getActionPanel());
-
-        contentPanel.setBackground(Color.cyan);
-        return contentPanel;
-    }
-
-    private void chooseITunesFile(JLabel label) {
-        int returnVal = fc.showOpenDialog(this);
-        if (returnVal == JFileChooser.APPROVE_OPTION) {
-            this.selectedFile = fc.getSelectedFile();
+    @FXML
+    private void chooseITunesFile() {
+        File file = fc.showOpenDialog(null);
+        if (file != null) {
+            this.selectedFile = file;
             updateLibrary();
-            changeSelectedFileLabelText(label);
+            updateSelectedFileName();
         } else {
 
         }
     }
 
-    private void changeSelectedFileLabelText(JLabel label) {
-        label.setText(this.selectedFile.getPath());
-    }
-
-    private void tagChanged(String selectedTag) {
-        this.selectedTag = Mp3Tag.getEnum(selectedTag);
-    }
-
+    @FXML
     private void startCopyRating() {
+        Mp3Tag selectedTag = Mp3Tag.getEnum(tagsCombo.getValue());
+        Playlist selectedPlaylist = this.playlistComboBox.getValue();
         if (selectedFile == null)
             return;
-        List<Song> songs = getSongsFromPlaylist(library.getSongs(), this.selectedPlaylist);
-        int dialogResult = JOptionPane.showConfirmDialog(null, RatingCopyProcessor.getSongToProcess(songs, selectedTag, override.isSelected()).size() + " Songs will be processed", "Warning", JOptionPane.YES_NO_OPTION);
-        if (dialogResult == JOptionPane.YES_OPTION) {
-            taskExecutor.execute(new RatingCopyTask(ratingCopyProcessor, songs, this.selectedTag, override.isSelected()));
+        List<Song> songs = getSongsFromPlaylist(library.getSongs(), selectedPlaylist);
+        String message = RatingCopyProcessor.getSongToProcess(songs, selectedTag, override.isSelected()).size() + " Songs will be processed";
+        String title = "Warning";
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setHeaderText(title);
+        alert.setContentText(message);
+        Optional<ButtonType> result = alert.showAndWait();
+        if (result.get() == ButtonType.OK){
+            taskExecutor.execute(new RatingCopyTask(ratingCopyProcessor, songs, selectedTag, override.isSelected()));
         }
     }
 
     @Override
-    public void progress(int nbrOfFileProcessed, int nbrOfFileToProcess) {
+    public void progress(int nbrOfFileProcessed, int totalNbrOfFile) {
         if (nbrOfFileProcessed == 0) {
-            this.progressBar.setMinimum(0);
-            this.progressBar.setMaximum(nbrOfFileToProcess);
+            this.progressBar.setProgress(0);
         } else {
-            this.progressBar.setValue(nbrOfFileProcessed);
+            this.progressBar.setProgress((double)totalNbrOfFile/(double)nbrOfFileProcessed);
         }
     }
 
@@ -211,5 +158,22 @@ public class MainFrame extends JFrame implements ProcessFileProgressListener {
         if (playlist == null)
             return allSongs;
         return allSongs.stream().filter(s -> playlist.getTracks().contains(s.getId())).collect(Collectors.toList());
+    }
+
+    @FXML
+    public void tagsSelected() {
+        tagSelected = true;
+        enableStartButton();
+    }
+
+    @FXML
+    public void playlistSelected() {
+        playlistSelected = true;
+        enableStartButton();
+    }
+
+    private void enableStartButton() {
+        if(playlistSelected && tagSelected && selectedFile != null)
+            startButton.setDisable(false);
     }
 }

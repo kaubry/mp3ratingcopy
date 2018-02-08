@@ -1,34 +1,28 @@
 package watershine.gui;
 
+import javafx.scene.control.ComboBox;
 import watershine.model.Playlist;
 
-import javax.swing.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
 /**
  * Created by kevin on 27.06.2017.
  */
-public class PlayListComboBox extends JComboBox<Playlist> {
+public class PlayListComboBox extends ComboBox<Playlist> {
 
     private List<Playlist> playlists;
 
     public PlayListComboBox() {
-        this.setEnabled(false);
+        this.setDisable(true);
     }
 
-    public void updatePlaylist(List<Playlist> playlists) {
-        this.removeAllItems();
-        this.playlists = playlists.stream().flatMap(Playlist::flattened).filter(p -> !p.isFolder() && p.getTracks() != null && p.getTracks().size() > 0).collect(Collectors.toList());
-        if(this.playlists.size() > 0) {
-            this.setEnabled(true);
+    public void updatePlaylist(List<Playlist> pl) {
+        this.getItems().removeAll(this.getItems());
+        playlists = pl.stream().flatMap(Playlist::flattened).filter(p -> !p.isFolder() && p.getTracks() != null && p.getTracks().size() > 0).collect(Collectors.toList());
+        if(playlists.size() > 0) {
+            this.setDisable(false);
         }
-        updateContent();
-    }
-
-    private void updateContent() {
-        for(Playlist playlist : this.playlists) {
-            this.addItem(playlist);
-        }
+        this.getItems().addAll(playlists);
     }
 }

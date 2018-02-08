@@ -5,6 +5,6 @@ package watershine;
  */
 public interface ProcessFileProgressListener {
 
-    public void progress(int nbrOfFileProcessed, int nbrOfFileToProcess);
+    void progress(int nbrOfFileProcessed, int totalNbrOfFile);
 
 }

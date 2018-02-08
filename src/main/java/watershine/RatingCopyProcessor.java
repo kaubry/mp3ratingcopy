@@ -1,9 +1,6 @@
 package watershine;
 
-import com.mpatric.mp3agic.InvalidDataException;
-import com.mpatric.mp3agic.Mp3File;
-import com.mpatric.mp3agic.NotSupportedException;
-import com.mpatric.mp3agic.UnsupportedTagException;
+import com.mpatric.mp3agic.*;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 import watershine.model.Song;
@@ -13,10 +10,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.nio.file.attribute.FileAttribute;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -34,8 +29,8 @@ public class RatingCopyProcessor {
         tempDirectory.deleteOnExit();
         List<Song> toProcess = getSongToProcess(songs, tag, override);
         int fileProcessed = 0;
-        int fileToProcess = toProcess.size();
-        notifyProgressListener(fileProcessed, fileToProcess);
+        int nbrOfFileToProcess = toProcess.size();
+        notifyProgressListener(fileProcessed, nbrOfFileToProcess);
         for (Song song : toProcess) {
             String filePath = URI.create(song.getSongFileURI()).getPath();
             if (filePath.startsWith("/")) {
@@ -62,10 +57,6 @@ public class RatingCopyProcessor {
                     String tempMp3 = tempDirectory.getPath() + File.separator + new File(mp3File.getFilename()).getName() + ".new";
                     mp3File.save(tempMp3);
                     Files.move(Paths.get(tempMp3), Paths.get(filePath), StandardCopyOption.REPLACE_EXISTING);
-                    fileToProcess--;
-                    fileProcessed++;
-                    notifyProgressListener(fileProcessed, fileToProcess);
-
                 } else {
                     System.err.println("File " + filePath + "is not Id3v2 compatible");
                 }
@@ -76,6 +67,8 @@ public class RatingCopyProcessor {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+            fileProcessed++;
+            notifyProgressListener(fileProcessed, nbrOfFileToProcess);
         }
     }
 
