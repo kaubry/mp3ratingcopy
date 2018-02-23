@@ -22,7 +22,8 @@ public class RatingCopyProcessor {
 
     private List<ProcessFileProgressListener> progressListeners = new ArrayList<>();
 
-    public void copyRatingsIntoMp3Tag(List<Song> songs, Mp3Tag tag, boolean override) {
+    public List<Error> copyRatingsIntoMp3Tag(List<Song> songs, Mp3Tag tag, boolean override) {
+        List errors = new ArrayList<Error>();
         String tempDir = System.getProperty("java.io.tmpdir");
         File tempDirectory = new File(tempDir + File.separator + "rating_copy");
         tempDirectory.mkdir();
@@ -58,18 +59,19 @@ public class RatingCopyProcessor {
                     mp3File.save(tempMp3);
                     Files.move(Paths.get(tempMp3), Paths.get(filePath), StandardCopyOption.REPLACE_EXISTING);
                 } else {
-                    System.err.println("File " + filePath + "is not Id3v2 compatible");
+                    errors.add(new Error("File " + filePath + "is not Id3v2 compatible"));
                 }
             } catch (UnsupportedTagException | InvalidDataException | NotSupportedException e) {
                 e.printStackTrace();
             } catch (FileNotFoundException e) {
-                System.err.println("File" + filePath + "can't be found");
+                errors.add(new Error("File" + filePath + "can't be found", e));
             } catch (IOException e) {
                 e.printStackTrace();
             }
             fileProcessed++;
             notifyProgressListener(fileProcessed, nbrOfFileToProcess);
         }
+        return errors;
     }
 
     public static List<Song> getSongToProcess(List<Song> songs, Mp3Tag tag, boolean override) {

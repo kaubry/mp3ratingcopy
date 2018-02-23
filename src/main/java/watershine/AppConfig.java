@@ -2,7 +2,6 @@ package watershine;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import watershine.itunes.jax2b.Dict;
 import watershine.itunes.jax2b.DictArray;
@@ -22,10 +21,4 @@ public class AppConfig {
         marshaller.setSupportDtd(true);
         return marshaller;
     }
-
-    @Bean
-    public SimpleAsyncTaskExecutor taskExecutor() {
-        return new SimpleAsyncTaskExecutor();
-    }
-
 }

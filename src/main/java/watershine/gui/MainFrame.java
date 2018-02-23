@@ -1,14 +1,14 @@
 package watershine.gui;
 
+import javafx.concurrent.Task;
+import javafx.concurrent.WorkerStateEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.stage.FileChooser;
 import org.apache.commons.lang3.SystemUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Component;
 import watershine.Mp3Tag;
-import watershine.ProcessFileProgressListener;
 import watershine.RatingCopyProcessor;
 import watershine.RatingCopyTask;
 import watershine.itunes.ITunesXMLParser;
@@ -16,7 +16,6 @@ import watershine.model.Library;
 import watershine.model.Playlist;
 import watershine.model.Song;
 
-import javax.annotation.PreDestroy;
 import javax.xml.bind.JAXBException;
 import javax.xml.stream.XMLStreamException;
 import java.io.File;
@@ -28,14 +27,12 @@ import java.util.stream.Collectors;
 
 
 @Component
-class MainFrameController implements ProcessFileProgressListener {
+class MainFrameController {
 
     @Autowired
     private ITunesXMLParser iTunesXMLParser;
     @Autowired
     private RatingCopyProcessor ratingCopyProcessor;
-    @Autowired
-    private TaskExecutor taskExecutor;
 
     @FXML
     public Label itunesFileLabel;
@@ -63,7 +60,6 @@ class MainFrameController implements ProcessFileProgressListener {
         updateSelectedFileName();
         initFileChooser();
         initTagsCombo();
-        ratingCopyProcessor.addProgressListener(this);
         if (selectedFile != null) {
             updateLibrary();
             updateDropDown();
@@ -78,11 +74,6 @@ class MainFrameController implements ProcessFileProgressListener {
         } else {
             itunesFileLabel.setText("");
         }
-    }
-
-    @PreDestroy
-    private void destroy() {
-        ratingCopyProcessor.removeProgressListener(this);
     }
 
     private void updateLibrary() {
@@ -133,19 +124,22 @@ class MainFrameController implements ProcessFileProgressListener {
         alert.setHeaderText(title);
         alert.setContentText(message);
         Optional<ButtonType> result = alert.showAndWait();
-        if (result.isPresent() && result.get() == ButtonType.OK){
-            taskExecutor.execute(new RatingCopyTask(ratingCopyProcessor, songs, selectedTag, override.isSelected()));
+        if (result.isPresent() && result.get() == ButtonType.OK) {
+            progressBar.progressProperty().unbind();
+            Task<List<Error>> ratingCopyTask = new RatingCopyTask(ratingCopyProcessor, songs, selectedTag, override.isSelected());
+            progressBar.progressProperty().bind(ratingCopyTask.progressProperty());
+            ratingCopyTask.setOnSucceeded(e -> processResults(e));
+            new Thread(ratingCopyTask).start();
         }
     }
 
-    @Override
-    public void progress(int nbrOfFileProcessed, int totalNbrOfFile) {
-        if (nbrOfFileProcessed == 0) {
-            this.progressBar.setProgress(0);
-        } else {
-            this.progressBar.setProgress((double)totalNbrOfFile/(double)nbrOfFileProcessed);
+    private void processResults(WorkerStateEvent event) {
+        List<Error> errors = (List<Error>) event.getSource().getValue();
+        for (Error e : errors) {
+            System.out.println("e.getMessage() = " + e.getMessage());
         }
     }
+
 
     private File getDefaultItunesXMLFile() {
         String homePath = System.getProperty("user.home");
@@ -177,7 +171,7 @@ class MainFrameController implements ProcessFileProgressListener {
     }
 
     private void enableStartButton() {
-        if(playlistSelected && tagSelected && selectedFile != null)
+        if (playlistSelected && tagSelected && selectedFile != null)
             startButton.setDisable(false);
     }
 }

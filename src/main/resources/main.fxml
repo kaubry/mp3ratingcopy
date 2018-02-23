@@ -13,8 +13,8 @@
       <Button id="mainButton" layoutX="18.0" layoutY="14.0" mnemonicParsing="false" onMouseClicked="#chooseITunesFile" prefHeight="25.0" prefWidth="163.0" text="Locate iTunes XML file" />
       <CheckBox fx:id="override" layoutX="196.0" layoutY="52.0" mnemonicParsing="false" text="Override" />
       <Label fx:id="itunesFileLabel" layoutX="196.0" layoutY="18.0" prefHeight="17.0" prefWidth="338.0" text="Itunes file label" />
-      <PlayListComboBox fx:id="playlistComboBox" onAction="#playlistSelected" layoutX="18.0" layoutY="83.0" prefHeight="25.0" prefWidth="259.0" promptText="Select Playlist To Process" />
-      <ComboBox fx:id="tagsCombo" onAction="#tagsSelected" layoutX="18.0" layoutY="48.0" prefHeight="25.0" prefWidth="163.0" promptText="Copy Ratings To" />
+      <PlayListComboBox fx:id="playlistComboBox" layoutX="17.0" layoutY="84.0" onAction="#playlistSelected" prefHeight="27.0" prefWidth="517.0" promptText="Select Playlist To Process" />
+      <ComboBox fx:id="tagsCombo" layoutX="18.0" layoutY="48.0" onAction="#tagsSelected" prefHeight="25.0" prefWidth="163.0" promptText="Copy Ratings To" />
       <ProgressBar fx:id="progressBar" layoutX="198.0" layoutY="122.0" prefHeight="25.0" prefWidth="338.0" progress="0.0" />
       <Button id="startButton" fx:id="startButton" disable="true" layoutX="19.0" layoutY="122.0" mnemonicParsing="false" onMouseClicked="#startCopyRating" prefHeight="25.0" prefWidth="163.0" text="Start" />
    </children>

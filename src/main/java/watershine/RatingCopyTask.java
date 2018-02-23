@@ -1,11 +1,12 @@
 package watershine;
 
 
+import javafx.concurrent.Task;
 import watershine.model.Song;
 
 import java.util.List;
 
-public class RatingCopyTask implements Runnable {
+public class RatingCopyTask extends Task<List<Error>> implements ProcessFileProgressListener {
 
     private RatingCopyProcessor ratingCopyProcessor;
     private List<Song> songs;
@@ -20,7 +21,17 @@ public class RatingCopyTask implements Runnable {
     }
 
     @Override
-    public void run() {
-        ratingCopyProcessor.copyRatingsIntoMp3Tag(songs, tag, override);
+    public List<Error> call() throws Exception {
+        this.ratingCopyProcessor.addProgressListener(this);
+        List<Error> errors = ratingCopyProcessor.copyRatingsIntoMp3Tag(songs, tag, override);
+        this.ratingCopyProcessor.removeProgressListener(this);
+        return errors;
     }
+
+    @Override
+    public void progress(int nbrOfFileProcessed, int totalNbrOfFile) {
+        updateProgress(nbrOfFileProcessed, totalNbrOfFile);
+    }
+
+
 }
