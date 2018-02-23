@@ -20,35 +20,20 @@ import javax.xml.stream.XMLStreamReader;
 import javax.xml.transform.stream.StreamSource;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Component
 public class ITunesXMLParser implements LibraryParserInterface {
 
-    private final static String TO_REMOVE_FROM_PATH = "file://localhost/";
-
-
     private SongLibrary parseFile(String filePath) throws IOException, JAXBException, XMLStreamException {
-
-        FileInputStream is = null;
-        try {
-            is = new FileInputStream(filePath);
             JAXBContext context = JAXBContext.newInstance(SongLibrary.class);
             Unmarshaller unmarshaller = context.createUnmarshaller();
             XMLInputFactory xif = XMLInputFactory.newFactory();
             xif.setProperty(XMLInputFactory.SUPPORT_DTD, false);
             XMLStreamReader xsr = xif.createXMLStreamReader(new StreamSource(filePath));
             return unmarshaller.unmarshal(xsr, SongLibrary.class).getValue();
-        } finally {
-            if (is != null) {
-                is.close();
-            }
-        }
     }
 
     @Override
@@ -72,29 +57,31 @@ public class ITunesXMLParser implements LibraryParserInterface {
         ArrayList<Song> songs = new ArrayList<>();
         if (songLibrary != null && songLibrary.getDict() != null) {
             Dict tracks = (Dict) getValueInDict(songLibrary.getDict(), "Tracks");
-            for (Object d : tracks.getValues()) {
-                if (d instanceof Dict) {
-                    Dict dict = (Dict) d;
-                    Song song = new Song();
-                    int id = (int) getValueInDict(dict, "Track ID");
-                    song.setId(id);
-                    String location = (String) getValueInDict(dict, "Location");
-                    song.setSongFileURI(location);
-                    try {
-                        int rating = (Integer) getValueInDict(dict, "Rating");
-                        song.setStarRating(rating);
-                    } catch (NullPointerException e) {
-                    }
-                    try {
-                        song.setTag(Mp3Tag.COMMENT, (String) getValueInDict(dict, "Comments"));
+            if (tracks != null) {
+                for (Object d : tracks.getValues()) {
+                    if (d instanceof Dict) {
+                        Dict dict = (Dict) d;
+                        Song song = new Song();
+                        int id = (int) getValueInDict(dict, "Track ID");
+                        song.setId(id);
+                        String location = (String) getValueInDict(dict, "Location");
+                        song.setSongFileURI(location);
+                        try {
+                            int rating = (Integer) getValueInDict(dict, "Rating");
+                            song.setStarRating(rating);
+                        } catch (NullPointerException e) {
+                        }
+                        try {
+                            song.setTag(Mp3Tag.COMMENT, (String) getValueInDict(dict, "Comments"));
 
-                    } catch (NullPointerException e) {
+                        } catch (NullPointerException e) {
+                        }
+                        try {
+                            song.setTag(Mp3Tag.COMPOSER, (String) getValueInDict(dict, "Composer"));
+                        } catch (NullPointerException e) {
+                        }
+                        songs.add(song);
                     }
-                    try {
-                        song.setTag(Mp3Tag.COMPOSER, (String) getValueInDict(dict, "Composer"));
-                    } catch (NullPointerException e) {
-                    }
-                    songs.add(song);
                 }
             }
         }
@@ -129,7 +116,7 @@ public class ITunesXMLParser implements LibraryParserInterface {
 
     private List<Integer> getTracksInPlaylist(DictArray playlistItem) {
         if (playlistItem == null)
-            return null;
+            return Collections.emptyList();
         List<Integer> tracks = new ArrayList<>();
         for (Dict dict : playlistItem.getDicts()) {
             tracks.add((Integer) getValueInDict(dict, "Track ID"));

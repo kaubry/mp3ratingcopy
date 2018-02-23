@@ -2,6 +2,7 @@ package watershine;
 
 import com.mpatric.mp3agic.*;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.SystemUtils;
 import org.springframework.stereotype.Component;
 import watershine.model.Song;
 
@@ -19,7 +20,6 @@ import java.util.stream.Collectors;
 @Component
 public class RatingCopyProcessor {
 
-    private final static String STAR_UNICODE = "\u2B50";
     private List<ProcessFileProgressListener> progressListeners = new ArrayList<>();
 
     public void copyRatingsIntoMp3Tag(List<Song> songs, Mp3Tag tag, boolean override) {
@@ -33,7 +33,7 @@ public class RatingCopyProcessor {
         notifyProgressListener(fileProcessed, nbrOfFileToProcess);
         for (Song song : toProcess) {
             String filePath = URI.create(song.getSongFileURI()).getPath();
-            if (filePath.startsWith("/")) {
+            if (SystemUtils.IS_OS_WINDOWS && filePath.startsWith("/")) {
                 filePath = filePath.substring(1, filePath.length());
             }
             try {
@@ -86,7 +86,6 @@ public class RatingCopyProcessor {
         int numberOfStars = rating / 20;
         StringBuilder stringBuilder = new StringBuilder();
         for (int i = 0; i < numberOfStars; i++) {
-//            stringBuilder.append(STAR_UNICODE);
             stringBuilder.append("*");
         }
         return stringBuilder.toString();

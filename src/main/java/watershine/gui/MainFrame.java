@@ -1,6 +1,5 @@
 package watershine.gui;
 
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.stage.FileChooser;
@@ -111,8 +110,6 @@ class MainFrameController implements ProcessFileProgressListener {
             this.selectedFile = file;
             updateLibrary();
             updateSelectedFileName();
-        } else {
-
         }
     }
 
@@ -129,7 +126,7 @@ class MainFrameController implements ProcessFileProgressListener {
         alert.setHeaderText(title);
         alert.setContentText(message);
         Optional<ButtonType> result = alert.showAndWait();
-        if (result.get() == ButtonType.OK){
+        if (result.isPresent() && result.get() == ButtonType.OK){
             taskExecutor.execute(new RatingCopyTask(ratingCopyProcessor, songs, selectedTag, override.isSelected()));
         }
     }

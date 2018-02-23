@@ -14,11 +14,11 @@ public class AppConfig {
     @Bean
     public Jaxb2Marshaller jaxb2Marshaller() {
         Jaxb2Marshaller marshaller = new Jaxb2Marshaller();
-        marshaller.setClassesToBeBound(new Class[]{
+        marshaller.setClassesToBeBound(
                 SongLibrary.class,
                 Dict.class,
                 DictArray.class
-        });
+        );
         marshaller.setSupportDtd(true);
         return marshaller;
     }

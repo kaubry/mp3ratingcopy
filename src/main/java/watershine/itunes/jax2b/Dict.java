@@ -8,7 +8,7 @@ import java.util.*;
 public class Dict {
 
     @XmlElement( name="key" )
-    private ArrayList<String> keys;
+    private List<String> keys;
 
     @XmlElements(value = {
             @XmlElement(name="integer",
@@ -29,13 +29,13 @@ public class Dict {
                     type=String.class)
     })
 
-    private ArrayList<Object> values = new ArrayList<>();
+    private List<Object> values = new ArrayList<>();
 
-    public ArrayList<String> getKeys() {
+    public List<String> getKeys() {
         return keys;
     }
 
-    public ArrayList<Object> getValues() {
+    public List<Object> getValues() {
         return values;
     }
 }
