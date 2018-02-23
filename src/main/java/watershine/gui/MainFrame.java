@@ -64,8 +64,10 @@ class MainFrameController implements ProcessFileProgressListener {
         initFileChooser();
         initTagsCombo();
         ratingCopyProcessor.addProgressListener(this);
-        if (selectedFile != null)
+        if (selectedFile != null) {
             updateLibrary();
+            updateDropDown();
+        }
 
     }
 
@@ -86,10 +88,13 @@ class MainFrameController implements ProcessFileProgressListener {
     private void updateLibrary() {
         try {
             library = iTunesXMLParser.getLibrary(this.selectedFile.getPath());
-            playlistComboBox.updatePlaylist(library.getPlaylists());
         } catch (JAXBException | IOException | XMLStreamException e) {
             e.printStackTrace();
         }
+    }
+
+    private void updateDropDown() {
+        playlistComboBox.updatePlaylist(library.getPlaylists());
     }
 
     private void initTagsCombo() {
@@ -109,12 +114,14 @@ class MainFrameController implements ProcessFileProgressListener {
         if (file != null) {
             this.selectedFile = file;
             updateLibrary();
+            updateDropDown();
             updateSelectedFileName();
         }
     }
 
     @FXML
     private void startCopyRating() {
+        updateLibrary();
         Mp3Tag selectedTag = Mp3Tag.getEnum(tagsCombo.getValue());
         Playlist selectedPlaylist = this.playlistComboBox.getValue();
         if (selectedFile == null)
