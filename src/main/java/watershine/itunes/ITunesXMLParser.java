@@ -28,28 +28,20 @@ import java.util.stream.Collectors;
 public class ITunesXMLParser implements LibraryParserInterface {
 
     private SongLibrary parseFile(String filePath) throws IOException, JAXBException, XMLStreamException {
-            JAXBContext context = JAXBContext.newInstance(SongLibrary.class);
-            Unmarshaller unmarshaller = context.createUnmarshaller();
-            XMLInputFactory xif = XMLInputFactory.newFactory();
-            xif.setProperty(XMLInputFactory.SUPPORT_DTD, false);
-            XMLStreamReader xsr = xif.createXMLStreamReader(new StreamSource(filePath));
-            return unmarshaller.unmarshal(xsr, SongLibrary.class).getValue();
+        JAXBContext context = JAXBContext.newInstance(SongLibrary.class);
+        Unmarshaller unmarshaller = context.createUnmarshaller();
+        XMLInputFactory xif = XMLInputFactory.newFactory();
+        xif.setProperty(XMLInputFactory.SUPPORT_DTD, false);
+        XMLStreamReader xsr = xif.createXMLStreamReader(new StreamSource(filePath));
+        return unmarshaller.unmarshal(xsr, SongLibrary.class).getValue();
     }
 
     @Override
     public Library getLibrary(String xmlFilePath) throws JAXBException, IOException, XMLStreamException {
         Library library = new Library();
-
-        try {
-            SongLibrary songLibrary = parseFile(xmlFilePath);
-            library.setSongs(getSongs(songLibrary));
-            library.setPlaylists(getStructuredPlaylist(getPlaylists(songLibrary)));
-
-        } catch (IOException | JAXBException | XMLStreamException e) {
-            throw e;
-        }
-
-
+        SongLibrary songLibrary = parseFile(xmlFilePath);
+        library.setSongs(getSongs(songLibrary));
+        library.setPlaylists(getStructuredPlaylist(getPlaylists(songLibrary)));
         return library;
     }
 

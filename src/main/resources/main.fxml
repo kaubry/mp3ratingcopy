@@ -5,10 +5,13 @@
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ProgressBar?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.Pane?>
+<?import javafx.scene.text.TextFlow?>
 <?import watershine.gui.PlayListComboBox?>
 
-<Pane id="mainPanel" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="166.0" prefWidth="550.0" stylesheets="@style.css" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="watershine.gui.MainFrameController">
+<Pane id="mainPanel" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="315.0" prefWidth="550.0" stylesheets="@style.css" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="watershine.gui.MainFrameController">
    <children>
       <Button id="mainButton" layoutX="18.0" layoutY="14.0" mnemonicParsing="false" onMouseClicked="#chooseITunesFile" prefHeight="25.0" prefWidth="163.0" text="Locate iTunes XML file" />
       <CheckBox fx:id="override" layoutX="196.0" layoutY="52.0" mnemonicParsing="false" text="Override" />
@@ -17,5 +20,10 @@
       <ComboBox fx:id="tagsCombo" layoutX="18.0" layoutY="48.0" onAction="#tagsSelected" prefHeight="25.0" prefWidth="163.0" promptText="Copy Ratings To" />
       <ProgressBar fx:id="progressBar" layoutX="198.0" layoutY="122.0" prefHeight="25.0" prefWidth="338.0" progress="0.0" />
       <Button id="startButton" fx:id="startButton" disable="true" layoutX="19.0" layoutY="122.0" mnemonicParsing="false" onMouseClicked="#startCopyRating" prefHeight="25.0" prefWidth="163.0" text="Start" />
+      <ScrollPane id="infoScrollPane" layoutX="3.0" layoutY="164.0" prefHeight="148.0" prefWidth="544.0">
+        <content>
+           <TextFlow id="infoPanel" fx:id="infoPanel"/>
+        </content>
+      </ScrollPane>
    </children>
 </Pane>

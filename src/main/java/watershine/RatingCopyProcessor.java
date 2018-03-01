@@ -59,14 +59,16 @@ public class RatingCopyProcessor {
                     mp3File.save(tempMp3);
                     Files.move(Paths.get(tempMp3), Paths.get(filePath), StandardCopyOption.REPLACE_EXISTING);
                 } else {
-                    errors.add(new Error("File " + filePath + "is not Id3v2 compatible"));
+                    errors.add(new Error("File " + filePath + " is not Id3v2 compatible"));
                 }
             } catch (UnsupportedTagException | InvalidDataException | NotSupportedException e) {
+                errors.add(new Error(e.getMessage() + " for: " + filePath));
                 e.printStackTrace();
             } catch (FileNotFoundException e) {
-                errors.add(new Error("File" + filePath + "can't be found", e));
+                errors.add(new Error("File" + filePath + " can't be found", e));
             } catch (IOException e) {
-                e.printStackTrace();
+                errors.add(new Error(e.getMessage() + " for: " + filePath));
+//                e.printStackTrace();
             }
             fileProcessed++;
             notifyProgressListener(fileProcessed, nbrOfFileToProcess);

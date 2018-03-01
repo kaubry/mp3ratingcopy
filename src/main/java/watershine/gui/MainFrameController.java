@@ -4,6 +4,9 @@ import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
 import javafx.stage.FileChooser;
 import org.apache.commons.lang3.SystemUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,6 +49,8 @@ class MainFrameController {
     private ProgressBar progressBar;
     @FXML
     public Button startButton;
+    @FXML
+    public TextFlow infoPanel;
 
     private FileChooser fc;
     private Library library;
@@ -136,7 +141,10 @@ class MainFrameController {
     private void processResults(WorkerStateEvent event) {
         List<Error> errors = (List<Error>) event.getSource().getValue();
         for (Error e : errors) {
-            System.out.println("e.getMessage() = " + e.getMessage());
+            Text t = new Text(e.getMessage()+"\n");
+            t.setFill(Color.valueOf("#cba89f"));
+            infoPanel.getChildren().add(t);
+//            System.out.println("e.getMessage() = " + e.getMessage());
         }
     }
 

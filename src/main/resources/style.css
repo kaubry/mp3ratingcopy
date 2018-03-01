@@ -10,3 +10,16 @@
 /*.label, .check-box {*/
     /*-fx-text-fill: #ececec;*/
 /*}*/
+
+#infoScrollPane {
+    -fx-background: #2b2b2b;
+    -fx-border-color: #7d7d7d;
+}
+
+/*#infoScrollPane  > .viewport {*/
+    /*-fx-background-color: transparent;*/
+/*}*/
+
+#infoPanel {
+    -fx-text-fill: #cba89f;
+}
