@@ -22,8 +22,8 @@ public class RatingCopyProcessor {
 
     private List<ProcessFileProgressListener> progressListeners = new ArrayList<>();
 
-    public List<Error> copyRatingsIntoMp3Tag(List<Song> songs, Mp3Tag tag, boolean override) {
-        List errors = new ArrayList<Error>();
+    public List<Message> copyRatingsIntoMp3Tag(List<Song> songs, Mp3Tag tag, boolean override) {
+        List<Message> errors = new ArrayList();
         String tempDir = System.getProperty("java.io.tmpdir");
         File tempDirectory = new File(tempDir + File.separator + "rating_copy");
         tempDirectory.mkdir();
@@ -59,16 +59,14 @@ public class RatingCopyProcessor {
                     mp3File.save(tempMp3);
                     Files.move(Paths.get(tempMp3), Paths.get(filePath), StandardCopyOption.REPLACE_EXISTING);
                 } else {
-                    errors.add(new Error("File " + filePath + " is not Id3v2 compatible"));
+                    errors.add(new Message(Message.MessageLevel.ERROR, "File " + filePath + " is not Id3v2 compatible"));
                 }
             } catch (UnsupportedTagException | InvalidDataException | NotSupportedException e) {
-                errors.add(new Error(e.getMessage() + " for: " + filePath));
-                e.printStackTrace();
+                errors.add(new Message(Message.MessageLevel.ERROR, e.getMessage() + " for: " + filePath));
             } catch (FileNotFoundException e) {
-                errors.add(new Error("File" + filePath + " can't be found", e));
+                errors.add(new Message(Message.MessageLevel.ERROR, "File" + filePath + " can't be found"));
             } catch (IOException e) {
-                errors.add(new Error(e.getMessage() + " for: " + filePath));
-//                e.printStackTrace();
+                errors.add(new Message(Message.MessageLevel.ERROR, e.getMessage() + " for: " + filePath));
             }
             fileProcessed++;
             notifyProgressListener(fileProcessed, nbrOfFileToProcess);

@@ -11,9 +11,7 @@ import javafx.stage.FileChooser;
 import org.apache.commons.lang3.SystemUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import watershine.Mp3Tag;
-import watershine.RatingCopyProcessor;
-import watershine.RatingCopyTask;
+import watershine.*;
 import watershine.itunes.ITunesXMLParser;
 import watershine.model.Library;
 import watershine.model.Playlist;
@@ -131,7 +129,7 @@ class MainFrameController {
         Optional<ButtonType> result = alert.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
             progressBar.progressProperty().unbind();
-            Task<List<Error>> ratingCopyTask = new RatingCopyTask(ratingCopyProcessor, songs, selectedTag, override.isSelected());
+            Task<List<Message>> ratingCopyTask = new RatingCopyTask(ratingCopyProcessor, songs, selectedTag, override.isSelected());
             progressBar.progressProperty().bind(ratingCopyTask.progressProperty());
             ratingCopyTask.setOnSucceeded(e -> processResults(e));
             new Thread(ratingCopyTask).start();
@@ -139,12 +137,18 @@ class MainFrameController {
     }
 
     private void processResults(WorkerStateEvent event) {
-        List<Error> errors = (List<Error>) event.getSource().getValue();
-        for (Error e : errors) {
-            Text t = new Text(e.getMessage()+"\n");
-            t.setFill(Color.valueOf("#cba89f"));
+        List<Message> messages = (List<Message>) event.getSource().getValue();
+        for (Message m : messages) {
+            Text t = new Text(m.getMessage()+"\n");
+            switch (m.getLevel()) {
+                case ERROR:
+                    t.setFill(Color.valueOf("#CBA89F"));
+                    break;
+                case INFO:
+                    t.setFill(Color.valueOf("#91CB8E"));
+                    break;
+            }
             infoPanel.getChildren().add(t);
-//            System.out.println("e.getMessage() = " + e.getMessage());
         }
     }
 
