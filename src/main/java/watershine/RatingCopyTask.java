@@ -6,7 +6,7 @@ import watershine.model.Song;
 
 import java.util.List;
 
-public class RatingCopyTask extends Task<List<Message>> implements ProcessFileProgressListener {
+public class RatingCopyTask extends Task<List<Message>> implements ProcessFileProgressListener, MessageListener {
 
     private RatingCopyProcessor ratingCopyProcessor;
     private List<Song> songs;
@@ -23,8 +23,10 @@ public class RatingCopyTask extends Task<List<Message>> implements ProcessFilePr
     @Override
     public List<Message> call() throws Exception {
         this.ratingCopyProcessor.addProgressListener(this);
+        this.ratingCopyProcessor.addMessageListener(this);
         List<Message> errors = ratingCopyProcessor.copyRatingsIntoMp3Tag(songs, tag, override);
         this.ratingCopyProcessor.removeProgressListener(this);
+        this.ratingCopyProcessor.removeMessageListener(this);
         return errors;
     }
 
@@ -34,4 +36,8 @@ public class RatingCopyTask extends Task<List<Message>> implements ProcessFilePr
     }
 
 
+    @Override
+    public void updateMessages(List<Message> messages) {
+        updateValue(messages);
+    }
 }

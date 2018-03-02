@@ -14,6 +14,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -21,6 +22,7 @@ import java.util.stream.Collectors;
 public class RatingCopyProcessor {
 
     private List<ProcessFileProgressListener> progressListeners = new ArrayList<>();
+    private List<MessageListener> messageListeners = new ArrayList<>();
 
     public List<Message> copyRatingsIntoMp3Tag(List<Song> songs, Mp3Tag tag, boolean override) {
         List<Message> errors = new ArrayList();
@@ -62,7 +64,9 @@ public class RatingCopyProcessor {
                     errors.add(new Message(Message.MessageLevel.ERROR, "File " + filePath + " is not Id3v2 compatible"));
                 }
             } catch (UnsupportedTagException | InvalidDataException | NotSupportedException e) {
-                errors.add(new Message(Message.MessageLevel.ERROR, e.getMessage() + " for: " + filePath));
+                Message m = new Message(Message.MessageLevel.ERROR, e.getMessage() + " for: " + filePath);
+                notifyMessageListener(m);
+//                errors.add();
             } catch (FileNotFoundException e) {
                 errors.add(new Message(Message.MessageLevel.ERROR, "File" + filePath + " can't be found"));
             } catch (IOException e) {
@@ -99,11 +103,23 @@ public class RatingCopyProcessor {
         }
     }
 
+    private void notifyMessageListener(Message m) {
+        messageListeners.stream().forEach(l -> l.updateMessages(Arrays.asList(m)));
+    }
+
     public void addProgressListener(ProcessFileProgressListener listener) {
         progressListeners.add(listener);
     }
 
     public void removeProgressListener(ProcessFileProgressListener listener) {
         progressListeners.remove(listener);
+    }
+
+    public void addMessageListener(MessageListener listener) {
+        messageListeners.add(listener);
+    }
+
+    public void removeMessageListener(MessageListener listener) {
+        messageListeners.remove(listener);
     }
 }
