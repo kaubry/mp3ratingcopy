@@ -49,6 +49,8 @@ class MainFrameController {
     public Button startButton;
     @FXML
     public TextFlow infoPanel;
+    @FXML
+    public ScrollPane infoScrollPane;
 
     private FileChooser fc;
     private Library library;
@@ -63,6 +65,7 @@ class MainFrameController {
         updateSelectedFileName();
         initFileChooser();
         initTagsCombo();
+        infoScrollPane.vvalueProperty().bind(infoPanel.heightProperty());
         if (selectedFile != null) {
             updateLibrary();
             updateDropDown();
@@ -131,8 +134,10 @@ class MainFrameController {
             progressBar.progressProperty().unbind();
             Task<List<Message>> ratingCopyTask = new RatingCopyTask(ratingCopyProcessor, songs, selectedTag, override.isSelected());
             progressBar.progressProperty().bind(ratingCopyTask.progressProperty());
-            ratingCopyTask.setOnSucceeded(e -> processResults(e));
-            ratingCopyTask.valueProperty().addListener((ob, o, n) -> displayMessage(n));
+//            ratingCopyTask.setOnSucceeded(e -> processResults(e));
+            ratingCopyTask.setOnRunning(e -> displayMessage(new Message(Message.MessageLevel.INFO, "Start Processing")));
+            ratingCopyTask.setOnSucceeded(e -> displayMessage(new Message(Message.MessageLevel.INFO, "Finish Processing")));
+            ratingCopyTask.valueProperty().addListener((ob, o, n) -> displayMessage(n.toArray(new Message[n.size()])));
             new Thread(ratingCopyTask).start();
         }
     }
@@ -143,9 +148,9 @@ class MainFrameController {
 //        }
     }
 
-    private void displayMessage(List<Message> messages) {
+    private void displayMessage(Message... messages) {
         for (Message m : messages) {
-            Text t = new Text(m.getMessage() + "\n");
+            Text t = new Text("#"+m.getLevel().toString()+" - "+m.getMessage() + "\n");
             switch (m.getLevel()) {
                 case ERROR:
                     t.setFill(Color.valueOf("#CBA89F"));

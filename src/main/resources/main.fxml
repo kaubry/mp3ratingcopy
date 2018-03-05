@@ -20,9 +20,9 @@
       <ComboBox fx:id="tagsCombo" layoutX="18.0" layoutY="48.0" onAction="#tagsSelected" prefHeight="25.0" prefWidth="163.0" promptText="Copy Ratings To" />
       <ProgressBar fx:id="progressBar" layoutX="198.0" layoutY="122.0" prefHeight="25.0" prefWidth="338.0" progress="0.0" />
       <Button id="startButton" fx:id="startButton" disable="true" layoutX="19.0" layoutY="122.0" mnemonicParsing="false" onMouseClicked="#startCopyRating" prefHeight="25.0" prefWidth="163.0" text="Start" />
-      <ScrollPane id="infoScrollPane" layoutX="3.0" layoutY="164.0" prefHeight="148.0" prefWidth="544.0">
+      <ScrollPane id="infoScrollPane" fx:id="infoScrollPane" layoutX="3.0" layoutY="164.0" prefHeight="148.0" prefWidth="544.0">
         <content>
-           <TextFlow id="infoPanel" fx:id="infoPanel"/>
+           <TextFlow id="infoPanel" fx:id="infoPanel" maxWidth="520.0"/>
         </content>
       </ScrollPane>
    </children>
