@@ -131,6 +131,7 @@ class MainFrameController {
         alert.setContentText(message);
         Optional<ButtonType> result = alert.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
+            infoPanel.getChildren().clear();
             progressBar.progressProperty().unbind();
             Task<List<Message>> ratingCopyTask = new RatingCopyTask(ratingCopyProcessor, songs, selectedTag, override.isSelected());
             progressBar.progressProperty().bind(ratingCopyTask.progressProperty());

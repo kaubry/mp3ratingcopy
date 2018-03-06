@@ -85,7 +85,7 @@ public class RatingCopyProcessor {
         } else {
             returnList = songs.stream().filter(e -> StringUtils.isEmpty(e.getTag(tag))).collect(Collectors.toList());
         }
-        return returnList.stream().filter(e -> !getStarsInUnicode(e.getStarRating()).equals(e.getTag(tag))).collect(Collectors.toList());
+        return returnList.stream().filter(s -> s.getSongFileURI().endsWith(".mp3")).filter(e -> !getStarsInUnicode(e.getStarRating()).equals(e.getTag(tag))).collect(Collectors.toList());
     }
 
     public static String getStarsInUnicode(int rating) {
