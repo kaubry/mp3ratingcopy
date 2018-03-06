@@ -135,18 +135,11 @@ class MainFrameController {
             progressBar.progressProperty().unbind();
             Task<List<Message>> ratingCopyTask = new RatingCopyTask(ratingCopyProcessor, songs, selectedTag, override.isSelected());
             progressBar.progressProperty().bind(ratingCopyTask.progressProperty());
-//            ratingCopyTask.setOnSucceeded(e -> processResults(e));
             ratingCopyTask.setOnRunning(e -> displayMessage(new Message(Message.MessageLevel.INFO, "Start Processing")));
             ratingCopyTask.setOnSucceeded(e -> displayMessage(new Message(Message.MessageLevel.INFO, "Finish Processing")));
             ratingCopyTask.valueProperty().addListener((ob, o, n) -> displayMessage(n.toArray(new Message[n.size()])));
             new Thread(ratingCopyTask).start();
         }
-    }
-
-    private void processResults(WorkerStateEvent event) {
-//        List<Message> messages = (List<Message>) event.getSource().getValue();
-//
-//        }
     }
 
     private void displayMessage(Message... messages) {
