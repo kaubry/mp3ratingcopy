@@ -92,7 +92,7 @@ public class RatingCopyProcessor {
         int numberOfStars = rating / 20;
         StringBuilder stringBuilder = new StringBuilder();
         for (int i = 0; i < numberOfStars; i++) {
-            stringBuilder.append("*");
+            stringBuilder.append("★");
         }
         return stringBuilder.toString();
     }
